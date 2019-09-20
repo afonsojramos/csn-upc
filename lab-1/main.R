@@ -1,13 +1,18 @@
-generateStrogatz <- function(x) {
-  ws_graph <- watts.strogatz.game(1, 100, 4, 0.05)
-  average.path.length(ws_graph)/diameter(ws_graph)
-  transitivity(ws_graph)
-  hist(degree(ws_graph))
+library("igraph")
+
+# Strogatz Model
+generateStrogatz <- function(p) {
+  ws_graph <- watts.strogatz.game(1, 1000, 4, p)
+  return (c(l=average.path.length(ws_graph), c=transitivity(ws_graph)))
 }
 
-er <- generateStrogatz(2)
+normalise <- function(l) {
+  return (l/l[1])
+}
 
-
-l <- replicate(20, runif(sample(1:10, 1)), simplify = FALSE)
-unlist(lapply(l, length))
-
+ps <- 10^(seq(-4,0,0.2))
+values <- mapply(generateStrogatz, ps)
+len <- normalise(values["l",])
+coef <- normalise(values["c",])
+plot(ps,coef, ylim = c(0,1), ylab='coeff', log='x')
+points(ps,len, ylim = c(0,1), ylab='coeff',pch=15)
