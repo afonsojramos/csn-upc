@@ -1,4 +1,5 @@
-library("igraph")
+library('igraph')
+library('emdbook')
 
 # Strogatz Model
 generateStrogatz <- function(p) {
@@ -10,9 +11,10 @@ normalise <- function(l) {
   return (l/l[1])
 }
 
-ps <- 10^(seq(-4,0,0.2))
-values <- mapply(generateStrogatz, ps)
-len <- normalise(values["l",])
-coef <- normalise(values["c",])
-plot(ps,coef, ylim = c(0,1), ylab='coeff', log='x')
-points(ps,len, ylim = c(0,1), ylab='coeff',pch=15)
+ps <- lseq(0.0001,1,14)
+ps2 <- rep(ps, 10)
+values <- mapply(generateStrogatz, ps2)
+len <- normalise(values['l',])
+coef <- normalise(values['c',])
+plot(ps,coef, ylim = c(0,1), main = 'Title', xlab='Probability', ylab='Coefficient', log='x')
+points(ps,len, ylim = c(0,1),pch=15)
