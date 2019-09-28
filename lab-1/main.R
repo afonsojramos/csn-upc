@@ -11,8 +11,8 @@ normalise <- function(l) {
   return (l/l[1])
 }
 
-ps <- lseq(0.0001,1,14)
-ps2 <- rep(ps, 10)
+ps <- lseq(0.0001,1,14) # creation of logarithmic sequence
+ps2 <- rep(ps, 10) # repeat the values x times
 values <- mapply(generateStrogatz, ps2)
 len <- normalise(values['l',])
 coef <- normalise(values['c',])
