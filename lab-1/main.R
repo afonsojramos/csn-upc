@@ -1,20 +1,24 @@
 library('igraph')
 library('emdbook')
+library('tidyr')
 
 # Strogatz Model
-generateStrogatz <- function(p) {
-  ws_graph <- watts.strogatz.game(1, 1000, 4, p)
-  return (c(l=average.path.length(ws_graph), c=transitivity(ws_graph)))
+generateStrogatz <- function(n, p) {
+  ws_graph <- watts.strogatz.game(1, n, 4, p)
+  return (c(average.path.length(ws_graph), transitivity(ws_graph)))
 }
 
 normalise <- function(l) {
   return (l/l[1])
 }
 
-ps <- lseq(0.0001,1,14) # creation of logarithmic sequence
-ps2 <- rep(ps, 10) # repeat the values x times
-values <- mapply(generateStrogatz, ps2)
-len <- normalise(values['l',])
-coef <- normalise(values['c',])
-plot(ps,coef, ylim = c(0,1), main = 'Title', xlab='Probability', ylab='Coefficient', log='x')
-points(ps,len, ylim = c(0,1),pch=15)
+ps <- lseq(0.0001, 1, 14) # creation of logarithmic sequence
+ns <- seq(550, 1450, 100)
+args <- crossing(ps, ns)
+
+values <- mapply(generateStrogatz, args$ns, args$ps)
+lens <- normalise(apply(matrix(values[1,], nrow=length(ns)), 2, mean))
+coefs <- normalise(apply(matrix(values[2,], nrow=length(ns)), 2, mean))
+
+plot(ps, coefs, ylim = c(0, 1), main='Title', xlab='Probability', ylab='Coefficient', log='x')
+points(ps, lens, ylim = c(0, 1), pch=15)
