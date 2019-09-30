@@ -20,7 +20,7 @@ values <- mapply(generateStrogatz, args$ns, args$ps)
 lens <- normalise(apply(matrix(values[1,], nrow=length(ns)), 2, mean))
 coefs <- normalise(apply(matrix(values[2,], nrow=length(ns)), 2, mean))
 
-plot(ps, coefs, ylim = c(0, 1), main='Title', xlab='Probability', ylab='Coefficient', log='x', pch=0)
+plot(ps, coefs, ylim = c(0, 1), xlab='p', ylab='', log='x', pch=0)
 points(ps, lens, ylim = c(0, 1), pch=16)
 text(x=0.001, y=0.25, labels=c('L(p) / L(0)'))
 text(x=0.01, y=0.8, labels=c('C(p) / C(0)'))
