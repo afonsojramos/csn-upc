@@ -16,4 +16,4 @@ erdos_renyi_average_path_length <- function(n, epsilon=0.0001) {
 number_of_nodes <- 2 ^ (0 : 15)
 average_path_lengths <- lapply(number_of_nodes, erdos_renyi_average_path_length)
 
-plot(number_of_nodes, average_path_lengths, xlab = 'Number of nodes', ylab = 'Average shortest path length')
+plot(number_of_nodes, type='b' ,average_path_lengths, xlab = 'Number of nodes', ylab = 'Average shortest path length')
