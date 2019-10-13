@@ -1,8 +1,15 @@
 setwd("D:/Clouds/GitHub/csn-upc/lab-2/out-degree_sequences")
+library(dplyr)
+library(tidyr)
 
 write_summary <- function(language,file) {
    degree_sequence = read.table(file, header = FALSE)
-   return (c(language,length(degree_sequence$V1),max(degree_sequence$V1),sum(degree_sequence$V1)/length(degree_sequence$V1),length(degree_sequence$V1)/sum(degree_sequence$V1),"\n"))
+   return (c(Language = language,
+             N = length(degree_sequence$V1), 
+             'Maximum Degree' = max(degree_sequence$V1), 
+             'M/N' = sum(degree_sequence$V1)/length(degree_sequence$V1), 
+             'N/M' = length(degree_sequence$V1)/sum(degree_sequence$V1))
+           )
 }
 
 source = read.table("./list.txt", 
@@ -10,10 +17,10 @@ source = read.table("./list.txt",
          as.is = c("language","file") # this is need to have the cells treated as real strings and not as categorial data.
         )
 
-matrix <- matrix(,nrow = 6, ncol = 0)
-
-for (x in 1:nrow(source)) {
-    values <- write_summary(source$language[x], source$file[x])
-    vector[(length(vector) + 1):(length(vector) + length(values))] <- values
-}
-
+source %>%
+    as.data.frame %>%
+    setNames(c('language', 'file')) %>%
+    mutate_if(is.factor, as.character) %>%
+    mutate(summary = pmap(list(language, file), write_summary)) %>%
+    # drop(language) %>%
+    unnest_wider(summary)
