@@ -2,11 +2,11 @@ library(emdbook)
 library(tidyr)
 library(igraph)
 
-erdos_renyi_average_path_length <- function(n, epsilon=0.0001) {
+erdos_renyi_average_path_length <- function(n, epsilon=0.00001) {
 
     # Generate p such that G(n, p) will almost surely be connected
     value <- ((1 - epsilon) * log(n)) / n
-    p <- ifelse(value <= 0, 1, 1.1 * value)
+    p <- ifelse(value <= 0, 1, 1.0001 * value)
 
     print(glue::glue('Building Erdos-Renyi graph for: p = {p}, n = {n}'))
     graph <- erdos.renyi.game(n, p)
