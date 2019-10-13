@@ -9,7 +9,11 @@ source = read.table("./list.txt",
          header = TRUE,               # this is to indicate the first line of the file contains the names of the columns instead of the real data
          as.is = c("language","file") # this is need to have the cells treated as real strings and not as categorial data.
         )
+
+matrix <- matrix(,nrow = 6, ncol = 0)
+
 for (x in 1:nrow(source)) {
-    write_summary(source$language[x], source$file[x])
+    values <- write_summary(source$language[x], source$file[x])
+    vector[(length(vector) + 1):(length(vector) + length(values))] <- values
 }
 
