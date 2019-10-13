@@ -1,6 +1,7 @@
 setwd("D:/Clouds/GitHub/csn-upc/lab-2/out-degree_sequences")
 library(dplyr)
 library(tidyr)
+library(formattable)
 
 write_summary <- function(language, file) {
     degree_sequence = read.table(file, header = FALSE)
@@ -29,4 +30,8 @@ source %>%
     mutate(summary = pmap(list(language, file), write_summary)) %>%
     unnest_wider(summary) %>%
     # removes extra columns from table
-    select(-c('language', 'file'))
+    select(-c('language', 'file')) %>%
+    formattable(align = c("l", "c", "c", "c", "c", "c", "c", "c", "r"),
+                list(`Language` = formatter(
+                    "span", style = ~ style(color = "black", font.weight = "bold")
+                )))
