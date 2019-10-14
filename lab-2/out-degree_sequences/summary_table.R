@@ -2,6 +2,7 @@ setwd("D:/Clouds/GitHub/csn-upc/lab-2/out-degree_sequences")
 library(dplyr)
 library(tidyr)
 library(formattable)
+library(purrr)
 
 write_summary <- function(language, file) {
     degree_sequence = read.table(file, header = FALSE)

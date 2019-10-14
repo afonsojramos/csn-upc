@@ -2,19 +2,18 @@ require("stats4") # for MLE
 require("VGAM") # for the Riemann-zeta function
 
 H <- function(n, a) {
-  sum((1:n)^(-a))
+  sum((1:n) ^ (-a))
 }
 
-source = read.table("list-out.txt", 
-                    header = TRUE,               # this is to indicate the first line of the file contains the names of the columns instead of the real data
-                    as.is = c("language","file") # this is need to have the cells treated as real strings and not as categorial data.
-)
+source = read.table("list-out.txt",
+                    # this is to indicate the first line of the file contains the names of the columns instead of the real data
+                    header = TRUE,
+                    # this is need to have the cells treated as real strings and not as categorial data.
+                    as.is = c("language", "file"))
 
 get_AIC <- function(m2logL, K, N) {
-  m2logL + 2*K*N/(N-K-1) # AIC with a correction for sample size
+  m2logL + 2 * K * N / (N - K - 1) # AIC with a correction for sample size
 }
-
-#attributes(summary(mle_zeta))$m2logL
 
 estimate_likelihoods <- function(file) {
   degree_sequence = read.table(file, header = FALSE)
@@ -34,16 +33,16 @@ estimate_likelihoods <- function(file) {
   }
   
   
-  print(paste("N", N, sep=" "))
-  print(paste("k_max", k_max, sep=" "))
-  print(paste("M", M, sep=" "))
-  print(paste("N/M", N/M))
-  print(paste("M/N", M/N))
-  print(paste("M_", M_, sep=" "))
-  print(paste("c", C, sep=" "))
+  print(paste("N", N, sep = " "))
+  print(paste("k_max", k_max, sep = " "))
+  print(paste("M", M, sep = " "))
+  print(paste("N/M", N / M))
+  print(paste("M/N", M / N))
+  print(paste("M_", M_, sep = " "))
+  print(paste("c", C, sep = " "))
   
   minus_log_likelihood_poisson <- function(lambda) {
-    N*(lambda+log(1-exp(-lambda))) + C - M * log(lambda)
+    N * (lambda + log(1 - exp(-lambda))) + C - M * log(lambda)
   }
   
   minus_log_likelihood_geometric <- function(q) {
@@ -51,7 +50,7 @@ estimate_likelihoods <- function(file) {
   }
   
   minus_log_likelihood_zeta2 <- function() {
-    2 * M_ + N * log(pi^2 / 6)
+    2 * M_ + N * log(pi ^ 2 / 6)
   }
   
   minus_log_likelihood_zeta <- function(gamma) {
@@ -64,49 +63,53 @@ estimate_likelihoods <- function(file) {
   
   minus_log_likelihood_altmann <- function(gamma, delta, k_s) {
     N_s <- seq(1:N)
-    c <- 1 / sum(N_s^(-gamma) * exp(-delta * N_s))
+    c <- 1 / sum(N_s ^ (-gamma) * exp(-delta * N_s))
     sum(gamma * log(k_s) + delta * k_s - log(c))
   }
   
-  mle_poisson <- mle(minus_log_likelihood_poisson,
-                  start = list(lambda = M/N),
-                  method = "L-BFGS-B",
-                  lower = c(1.0000001)
+  mle_poisson <- mle(
+    minus_log_likelihood_poisson,
+    start = list(lambda = M / N),
+    method = "L-BFGS-B",
+    lower = c(1.0000001)
   )
   
-  mle_geometric <- mle(minus_log_likelihood_geometric,
-                       start = list(q = N/M),
-                       method = "L-BFGS-B",
-                       lower = c(0.01),
-                       upper = c(0.99)
+  mle_geometric <- mle(
+    minus_log_likelihood_geometric,
+    start = list(q = N / M),
+    method = "L-BFGS-B",
+    lower = c(0.01),
+    upper = c(0.99)
   )
   
   mle_zeta2_number <- minus_log_likelihood_zeta2()
   
-  mle_zeta <- mle(minus_log_likelihood_zeta,
-                  start = list(gamma = 2),
-                  method = "L-BFGS-B",
-                  lower = c(1.0000001)
+  mle_zeta <- mle(
+    minus_log_likelihood_zeta,
+    start = list(gamma = 2),
+    method = "L-BFGS-B",
+    lower = c(1.0000001)
   )
   
-  mle_zeta_trunc <- mle(minus_log_likelihood_zeta_trunc,
-                  start = list(gamma = 2, k_max = k_max),
-                  method = "L-BFGS-B",
-                  lower = c(1.0000001, N)
+  mle_zeta_trunc <- mle(
+    minus_log_likelihood_zeta_trunc,
+    start = list(gamma = 2, k_max = k_max),
+    method = "L-BFGS-B",
+    lower = c(1.0000001, N)
   )
   
-  mle_altmann <- mle(minus_log_likelihood_altmann,
-                  start = list(gamma = 1, delta = 1),
-                  fixed = list(k_s = x),
-                  method = "L-BFGS-B",
-                  lower = c(0.00001, 0.00001)
+  mle_altmann <- mle(
+    minus_log_likelihood_altmann,
+    start = list(gamma = 1, delta = 1),
+    fixed = list(k_s = x),
+    method = "L-BFGS-B",
+    lower = c(0.00001, 0.00001)
   )
   
   print("-----")
   print("Params:")
   print(attributes(summary(mle_poisson))$coef)
   print(attributes(summary(mle_geometric))$coef)
-  print(NULL)
   print(attributes(summary(mle_zeta))$coef)
   print(attributes(summary(mle_zeta_trunc))$coef)
   print(attributes(summary(mle_altmann))$coef)
@@ -120,7 +123,12 @@ estimate_likelihoods <- function(file) {
   
   print("----")
   print("AIC without Altmann:")
-  aics <- c(aic_poisson, aic_geometric, aic_zeta2, aic_zeta, aic_zeta_trunc)
+  aics <-
+    c(aic_poisson,
+      aic_geometric,
+      aic_zeta2,
+      aic_zeta,
+      aic_zeta_trunc)
   print(aics)
   aic_best = min(aics)
   print(aic_best)
@@ -129,7 +137,13 @@ estimate_likelihoods <- function(file) {
   
   print("----")
   print("AIC with Altmann:")
-  aics <- c(aic_poisson, aic_geometric, aic_zeta2, aic_zeta, aic_zeta_trunc, aic_altmann)
+  aics <-
+    c(aic_poisson,
+      aic_geometric,
+      aic_zeta2,
+      aic_zeta,
+      aic_zeta_trunc,
+      aic_altmann)
   print(aics)
   aic_best = min(aics)
   print(aic_best)
@@ -137,12 +151,8 @@ estimate_likelihoods <- function(file) {
   print(aic_diffs)
 }
 
-#estimate_likelihoods("./samples_from_discrete_distributions/data/sample_of_geometric_with_parameter_0.05.txt")
-#estimate_likelihoods("./data/English_out-degree_sequence.txt")
-
 for (x in 1:nrow(source)) {
   print("-----------------------")
   print(source$language[x])
   estimate_likelihoods(source$file[x])
 }
-
