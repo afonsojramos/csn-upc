@@ -25,21 +25,35 @@ get_results <- function(nonlinear_model) {
 
 "Arabic_dependency_tree_metrics.txt"
 
+language = "Catalan"
+
 # loading datas
-language_values = read.table("./data/Arabic_dependency_tree_metrics.txt", header = FALSE)
+language_values = read.table(paste("./data/" , language , "_dependency_tree_metrics.txt" , sep = "" ), header = FALSE)
 colnames( language_values ) = c( "vertices" , "degree_2nd_moment" , "mean_lenght" )
 language_values = language_values[order(language_values$vertices), ]
 
-# visualizing datas
-plot(language_values$vertices, language_values$degree_2nd_moment, xlab = "vertices", ylab = "degree_2nd_moment" )
-plot(log(language_values$vertices), log(language_values$degree_2nd_moment),xlab = "log(vertices)", ylab = "log(degree_2nd_moment)" )
+# compute mean language
+mean_language = aggregate( language_values, list(language_values$vertices), mean )
+
+
+# checking homocesdasticity -----------------------------------------------
+
+
+#calculate variance of point in functions of number of vertices
+variances = aggregate( language_values, list(language_values$vertices), var )
+#variances2 = apply( variances, 1, function(row) all(row$degree_2nd_moment != 0) )
+#variance[!apply(variance[,4] == 0, 1, FUN = any, na.rm = TRUE),]
+variances[!!rowSums(variances[ , 3:4, with=FALSE])]
+variances = na.omit(variances) #remove na values
+
+
+Fmax = max( variances$degree_2nd_moment ) /min( variances$degree_2nd_moment )
+
 
 # Visualizing datas -------------------------------------------------------
 
-
-   # compute mean language
-mean_language = aggregate( language_values, list(language_values$vertices), mean )
-
+plot(language_values$vertices, language_values$degree_2nd_moment, xlab = "vertices", ylab = "degree_2nd_moment" )
+plot(log(language_values$vertices), log(language_values$degree_2nd_moment),xlab = "log(vertices)", ylab = "log(degree_2nd_moment)" )
 
 plot( mean_language$vertices, mean_language$degree_2nd_moment, xlab = "vertices", ylab = "degree_2nd_moment" )
 
@@ -109,17 +123,17 @@ lines( log(language_values$vertices), log(fitted(nonlinear_model)) , col = "gree
 
 # fitting datas (model 3) -----------------------------------------------------------
 
-linear_model = lm( log(degree_2nd_moment)~vertices , language_values )
+lm3 = lm( log(degree_2nd_moment)~vertices , mean_language )
 
 print(linear_model)
 
-# a_initial = exp( coef(linear_model)[2] )
-# c_initial = coef(linear_model)[1]
+a_initial = exp( coef(linear_model)[1] )
+c_initial = coef(linear_model)[2]
 
-a_initial = 10
-b_initial = 10
+#a_initial = 10
+#b_initial = 10
 
-nonlinear_model = nls( degree_2nd_moment~a*exp(c*vertices), data=language_values, start = list(a = a_initial, c = c_initial), trace = TRUE )
+nonlinear_model = nls( degree_2nd_moment~a*exp(c*vertices), data=mean_language, start = list(a = a_initial, c = c_initial), trace = TRUE )
 
 
 #get RSS, AIC and s
