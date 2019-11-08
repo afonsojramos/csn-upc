@@ -39,13 +39,25 @@ mean_language = aggregate( language_values, list(language_values$vertices), mean
 # checking homocesdasticity -----------------------------------------------
 
 
-#calculate variance of point in functions of number of vertices
+#calculate variance in functions of number of vertices
 variances = aggregate( language_values, list(language_values$vertices), var )
 variances = variances[!apply(variances[,3:4] == 0, 1, FUN = any, na.rm = TRUE),] #remove zeros from dataframe
 variances = na.omit(variances) #remove na values
 
-
+#calculate Fmax
 Fmax = max( variances$degree_2nd_moment ) /min( variances$degree_2nd_moment )
+deltaF = 0.5
+
+#check if Fmax is close to 1
+if( Fmax <= 1 + deltaF && delta >= 1 - deltaF ){
+   print("data set is homocesdastistic")
+}else{
+   k = max( variances$Group.1 ) #get nb of groups
+   nb_participants = data.frame( table( language_values$vertices ) ) #get nb of participants per group (actually the nb of participants is not the same in each group)
+   n = mean( nb_participants$Freq ) #to et over this issue, we just take the m of nb of participants per group, some other techniques could discuss
+   #actually, the table goes only to k = 12 and n = 60, we surpass quite largely, so is it very significant ?
+   #for k = 12 and n = 60, tables indicate Fmaxmax should be < 2.36 
+}
 
 
 # Visualizing datas -------------------------------------------------------
