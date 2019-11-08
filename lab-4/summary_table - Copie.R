@@ -10,10 +10,7 @@ write_summary <- function(language,file) {
    mu_x = sum(language_values$V2)/length(language_values$V2) #mean of <k^2>
    sigma_x = 1/n * sum( (language_values$V2 - mu_n)^2 ) #standard deviation of <k^2>
    
-   #need to check validity : 4 - 6/n <= <k2> <= n - 1
-   # and n/(8(n-1)) <k^2> + 1/2 <= <d> <= n - 1
-   
-   cat( language,n,mu_n, sigma_n, mu_x, sigma_x,"\n" )
+   cat(language,n,mu_n, sigma_n, mu_x, sigma_x,"\n")
 
 }
 
@@ -25,6 +22,7 @@ source = read.table("list.txt",
 for( x in 1:nrow(source) ){
     write_summary(source$language[x], source$file[x] )
 }
+
 
 
 # language = "Arabic"
