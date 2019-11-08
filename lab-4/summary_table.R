@@ -55,6 +55,23 @@ write_summary <- function(languages) {
       
       #need to check validity : 4 - 6/n <= <k2> <= n - 1
       # and n/(8(n-1)) <k^2> + 1/2 <= <d> <= n - 1
+      n = language_values$vertices
+      k2 = language_values$degree_2nd_moment
+      d = language_values$mean_lenght
+      
+      verified = TRUE
+      for( i in length(n) ){
+         if( !( (4 - 6/n[i] <= k2[i]) && ( k2[i] <= n[i] - 1 ) && ( n[i]/(8*(n[i]-1) ) * k2[i] + 0.5 <= d[i] ) && ( d[i] <= n[i] - 1 ) ) ){
+            verified = FALSE
+            break
+         }   
+      }
+      
+      if( verified ){
+         print("metrics satisfy the conditions")
+      }else{
+         print("metrics doesn't satisfy the conditions")
+      }
       
       summary_table <-
          rbind(summary_table, list(language, N, mu_n, sigma_n, mu_x, sigma_x))

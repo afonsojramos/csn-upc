@@ -32,6 +32,7 @@ language_values = read.table(paste("./data/" , language , "_dependency_tree_metr
 colnames( language_values ) = c( "vertices" , "degree_2nd_moment" , "mean_lenght" )
 language_values = language_values[order(language_values$vertices), ]
 
+
 # compute mean language
 mean_language = aggregate( language_values, list(language_values$vertices), mean )
 
