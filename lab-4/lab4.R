@@ -41,9 +41,7 @@ mean_language = aggregate( language_values, list(language_values$vertices), mean
 
 #calculate variance of point in functions of number of vertices
 variances = aggregate( language_values, list(language_values$vertices), var )
-#variances2 = apply( variances, 1, function(row) all(row$degree_2nd_moment != 0) )
-#variance[!apply(variance[,4] == 0, 1, FUN = any, na.rm = TRUE),]
-variances[!!rowSums(variances[ , 3:4, with=FALSE])]
+variances = variances[!apply(variances[,3:4] == 0, 1, FUN = any, na.rm = TRUE),] #remove zeros from dataframe
 variances = na.omit(variances) #remove na values
 
 
