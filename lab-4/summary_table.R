@@ -55,9 +55,9 @@ write_summary <- function(languages) {
       
       #need to check validity : 4 - 6/n <= <k2> <= n - 1
       # and n/(8(n-1)) <k^2> + 1/2 <= <d> <= n - 1
-      n = language_values$vertices
-      k2 = language_values$degree_2nd_moment
-      d = language_values$mean_lenght
+      n = language_values$V1
+      k2 = language_values$V2
+      d = language_values$V3
       
       verified = TRUE
       for( i in length(n) ){
