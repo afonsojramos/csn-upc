@@ -1,15 +1,15 @@
 get_results <- function(language_values , nonlinear_model) {
-   #get RSS, AIC and s
+   # get RSS, AIC and s
    RSS = deviance(nonlinear_model)
    AIC = AIC(nonlinear_model)
    s = sqrt(RSS / df.residual(nonlinear_model)) #s : residual standard error
    
-   #get coefficient
+   # get coefficient
    coeff =  coef(nonlinear_model)
    
    cat("RSS: ", RSS, "\nAIC: ", AIC, "\nS: ", s, "\ncoeff: ", coeff)
    
-   #final plotting
+   # final plotting
    plot(
       log(language_values$vertices),
       log(language_values$degree_2nd_moment) ,
@@ -22,6 +22,7 @@ get_results <- function(language_values , nonlinear_model) {
 
 run_models <- function(languages) {
    for (x in 1:length(languages)) {
+      language = "Catalan"
       language <- languages[x]
       
       cat(
@@ -46,30 +47,30 @@ run_models <- function(languages) {
       mean_language = aggregate(language_values, list(language_values$vertices), mean)
       
       
-      # checking homocesdasticity -----------------------------------------------
+      # ---- Checking Homocesdasticity ----
       
-      #calculate variance in functions of number of vertices
+      # calculate variance in functions of number of vertices
       variances = aggregate(language_values, list(language_values$vertices), var)
       variances = variances[!apply(variances[, 3:4] == 0, 1, FUN = any, na.rm = TRUE), ] #remove zeros from dataframe
       variances = na.omit(variances) #remove na values
       
-      #calculate Fmax
+      # calculate Fmax
       Fmax = max(variances$degree_2nd_moment) / min(variances$degree_2nd_moment)
       deltaF = 0.5
       
-      #check if Fmax is close to 1
+      # check if Fmax is close to 1
       if (Fmax <= 1 + deltaF && delta >= 1 - deltaF) {
          print("data set is homocesdastic")
       } else{
          k = max(variances$Group.1) #get nb of groups
-         nb_participants = data.frame(table(language_values$vertices)) #get nb of participants per group (actually the nb of participants is not the same in each group)
-         n = mean(nb_participants$Freq) #to et over this issue, we just take the m of nb of participants per group, some other techniques could discuss
-         #actually, the table goes only to k = 12 and n = 60, we surpass quite largely, so is it very significant ?
-         #for k = 12 and n = 60, tables indicate Fmaxmax should be < 2.36
+         nb_participants = data.frame(table(language_values$vertices)) # get nb of participants per group (actually the nb of participants is not the same in each group)
+         n = mean(nb_participants$Freq) # to et over this issue, we just take the m of nb of participants per group, some other techniques could discuss
+         # actually, the table goes only to k = 12 and n = 60, we surpass quite largely, so is it very significant ?
+         # for k = 12 and n = 60, tables indicate Fmaxmax should be < 2.36
       }
       
       
-      # Visualizing datas -------------------------------------------------------
+      # ---- Visualizing Data ----
       
       plot(
          language_values$vertices,
@@ -121,7 +122,7 @@ run_models <- function(languages) {
       #lines(language_values$vertices,4-6/language_values$vertices, col = "blue")
       #lines(language_values$vertices,language_values$vertices-1, col = "blue" )
       
-      
+      # ---- Model 1 ----
       cat("\n----- Model 1 -----\n")
       
       lm1 = lm(log(degree_2nd_moment) ~ log(vertices) , mean_language)
@@ -136,7 +137,7 @@ run_models <- function(languages) {
       
       get_results(mean_language,  nonlinear_model)
       
-      
+      # ---- Model 2 ----
       cat("\n----- Model 2 -----\n")
       
       lm2 = lm(log(degree_2nd_moment) ~ log(vertices) , mean_language)
@@ -154,7 +155,7 @@ run_models <- function(languages) {
       
       get_results(mean_language,  nonlinear_model)
       
-      
+      # ---- Model 3 ----
       cat("\n----- Model 3 -----\n")
       
       lm3 = lm(log(degree_2nd_moment) ~ vertices , mean_language)
@@ -176,7 +177,7 @@ run_models <- function(languages) {
       
       get_results(mean_language,  nonlinear_model)
       
-      
+      # ---- Model 4 ----
       cat("\n----- Model 4 -----\n")
       
       lm4 = lm(degree_2nd_moment ~ log(vertices) , mean_language)
@@ -197,7 +198,7 @@ run_models <- function(languages) {
       
       get_results(mean_language , nonlinear_model)
       
-      
+      # ---- Model 1+ ----
       cat("\n----- Model 1+ -----\n")
       
       lm1 = lm(log(degree_2nd_moment) ~ log(vertices) , mean_language)
@@ -212,9 +213,11 @@ run_models <- function(languages) {
          trace = TRUE
       )
       
+      
+      
       get_results(mean_language,  nonlinear_model)
       
-      
+      # ---- Model 2+ ----
       cat("\n----- Model 2+ -----\n")
       
       lm2 = lm(log(degree_2nd_moment) ~ log(vertices) , mean_language)
@@ -229,12 +232,14 @@ run_models <- function(languages) {
          degree_2nd_moment ~ a * vertices ^ b + d,
          data = mean_language,
          start = list(a = a_initial, b = b_initial, d = d_initial),
-         trace = TRUE
+         trace = TRUE,
+         algorithm = "port",
+         lower = 0
       )
       
       get_results(mean_language,  nonlinear_model)
       
-      
+      # ---- Model 3+ ----
       cat("\n----- Model 3+ -----\n")
       
       lm3 = lm(log(degree_2nd_moment) ~ vertices , mean_language)
@@ -243,7 +248,7 @@ run_models <- function(languages) {
       
       a_initial = exp(coef(lm3)[1])
       c_initial = coef(lm3)[2]
-      d_initial = 0
+      d_initial = min(variances$degree_2nd_moment)
       
       #a_initial = 10
       #b_initial = 10
@@ -252,12 +257,14 @@ run_models <- function(languages) {
          degree_2nd_moment ~ a * exp(c * vertices) + d,
          data = mean_language,
          start = list(a = a_initial, c = c_initial, d = d_initial),
-         trace = TRUE
+         trace = TRUE,
+         algorithm = "port",
+         lower = 0
       )
       
       get_results(mean_language,  nonlinear_model)
       
-      
+      # ---- Model 4+ ----
       cat("\n----- Model 4+ -----\n")
       
       lm4 = lm(degree_2nd_moment ~ log(vertices) , mean_language)
