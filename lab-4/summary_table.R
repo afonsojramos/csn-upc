@@ -19,6 +19,8 @@ rm(requiredPackages)
 # set pwd to current directory, must load rstudioapi before.
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
+source("./lab4.R")
+
 ## ---- Generate Metrics Table ----
 ## languages = languages to evaluate
 write_summary <- function(languages) {
@@ -79,6 +81,7 @@ write_summary <- function(languages) {
    return(summary_table)
 }
 
+languages = c("Catalan")
 languages = c(
    "Arabic",
    "Basque",
@@ -93,3 +96,5 @@ languages = c(
 )
 
 summary = write_summary(languages)
+run_models(languages)
+
