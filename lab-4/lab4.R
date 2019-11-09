@@ -22,7 +22,6 @@ get_results <- function(language_values , nonlinear_model) {
 
 run_models <- function(languages) {
    for (x in 1:length(languages)) {
-      language = "Catalan"
       language <- languages[x]
       
       cat(

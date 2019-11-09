@@ -81,7 +81,6 @@ write_summary <- function(languages) {
    return(summary_table)
 }
 
-languages = c("Catalan")
 languages = c(
    "Arabic",
    "Basque",
