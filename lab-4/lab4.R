@@ -208,3 +208,4 @@ d_initial = 0
 nonlinear_model = nls( degree_2nd_moment~a*log(vertices) + d, data=mean_language, start = list(a = a_initial, d = d_initial), trace = TRUE )
 
 get_results( mean_language , nonlinear_model )
+
