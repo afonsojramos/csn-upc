@@ -1,4 +1,4 @@
-get_results <- function(language_values , nonlinear_model) {
+get_results <- function(language_values , nonlinear_model, model_name) {
    # get RSS, AIC and s
    RSS = deviance(nonlinear_model)
    AIC = AIC(nonlinear_model)
@@ -14,7 +14,8 @@ get_results <- function(language_values , nonlinear_model) {
       log(language_values$vertices),
       log(language_values$degree_2nd_moment) ,
       xlab = "log(vertices)" ,
-      ylab = "log(degree_2nd_moment)"
+      ylab = "log(degree_2nd_moment)",
+      main = model_name
    )
    lines(log(language_values$vertices), log(fitted(nonlinear_model)) , col = "green")
    
@@ -66,6 +67,7 @@ run_models <- function(languages) {
          n = mean(nb_participants$Freq) # to et over this issue, we just take the m of nb of participants per group, some other techniques could discuss
          # actually, the table goes only to k = 12 and n = 60, we surpass quite largely, so is it very significant ?
          # for k = 12 and n = 60, tables indicate Fmaxmax should be < 2.36
+         cat("Fmax : " , Fmax )
       }
       
       
@@ -77,6 +79,7 @@ run_models <- function(languages) {
          xlab = "vertices",
          ylab = "degree_2nd_moment"
       )
+      
       plot(
          log(language_values$vertices),
          log(language_values$degree_2nd_moment),
@@ -88,7 +91,8 @@ run_models <- function(languages) {
          mean_language$vertices,
          mean_language$degree_2nd_moment,
          xlab = "vertices",
-         ylab = "degree_2nd_moment"
+         ylab = "degree_2nd_moment",
+         sub = "mean values"
       )
       
       
@@ -96,7 +100,8 @@ run_models <- function(languages) {
          log(mean_language$vertices),
          log(mean_language$degree_2nd_moment),
          xlab = "log(vertices)",
-         ylab = "log(degree_2nd_moment)"
+         ylab = "log(degree_2nd_moment)",
+         sub = "mean values"
       )
       
       # plot
@@ -104,12 +109,14 @@ run_models <- function(languages) {
          log(language_values$vertices),
          log(language_values$degree_2nd_moment),
          xlab = "vertices",
-         ylab = "log(degree_2nd_moment)"
+         ylab = "log(degree_2nd_moment)",
+         sub = "null model"
       ) *
          lines(log(language_values$vertices), log((1 - 1 / language_values$vertices) *
                                                      (5 - 6 / (
                                                         language_values$vertices
                                                      ))), col = "green")
+      
       #lines(log(mean_language$vertices),log(mean_language$degree_2nd_moment), col = "green")
       #lines(log(mean_language$vertices),log((mean_language$vertices+1)/3), col = "red" )
       
@@ -121,10 +128,13 @@ run_models <- function(languages) {
       #lines(language_values$vertices,4-6/language_values$vertices, col = "blue")
       #lines(language_values$vertices,language_values$vertices-1, col = "blue" )
       
+      
       # ---- Model 1 ----
       cat("\n----- Model 1 -----\n")
       
       lm1 = lm(log(degree_2nd_moment) ~ log(vertices) , mean_language)
+      
+      print(lm1)
       
       b_initial = coef(lm1)[2]
       nonlinear_model = nls(
@@ -134,7 +144,7 @@ run_models <- function(languages) {
          trace = TRUE
       )
       
-      get_results(mean_language,  nonlinear_model)
+      get_results(mean_language,  nonlinear_model , "Model 1" )
       
       # ---- Model 2 ----
       cat("\n----- Model 2 -----\n")
@@ -152,7 +162,7 @@ run_models <- function(languages) {
          trace = TRUE
       )
       
-      get_results(mean_language,  nonlinear_model)
+      get_results(mean_language,  nonlinear_model, "Model 2")
       
       # ---- Model 3 ----
       cat("\n----- Model 3 -----\n")
@@ -174,7 +184,7 @@ run_models <- function(languages) {
          trace = TRUE
       )
       
-      get_results(mean_language,  nonlinear_model)
+      get_results(mean_language,  nonlinear_model, "Model 3")
       
       # ---- Model 4 ----
       cat("\n----- Model 4 -----\n")
@@ -195,12 +205,14 @@ run_models <- function(languages) {
          trace = TRUE
       )
       
-      get_results(mean_language , nonlinear_model)
+      get_results(mean_language , nonlinear_model, "Model 4")
       
       # ---- Model 1+ ----
       cat("\n----- Model 1+ -----\n")
       
       lm1 = lm(log(degree_2nd_moment) ~ log(vertices) , mean_language)
+      
+      print(lm1)
       
       b_initial = coef(lm1)[2]
       d_initial = 0
@@ -214,7 +226,7 @@ run_models <- function(languages) {
       
       
       
-      get_results(mean_language,  nonlinear_model)
+      get_results(mean_language,  nonlinear_model, "Model 1+")
       
       # ---- Model 2+ ----
       cat("\n----- Model 2+ -----\n")
@@ -236,7 +248,7 @@ run_models <- function(languages) {
          lower = 0
       )
       
-      get_results(mean_language,  nonlinear_model)
+      get_results(mean_language,  nonlinear_model, "Model 2+")
       
       # ---- Model 3+ ----
       cat("\n----- Model 3+ -----\n")
@@ -261,7 +273,7 @@ run_models <- function(languages) {
          lower = 0
       )
       
-      get_results(mean_language,  nonlinear_model)
+      get_results(mean_language,  nonlinear_model, "Model 3+")
       
       # ---- Model 4+ ----
       cat("\n----- Model 4+ -----\n")
@@ -283,151 +295,166 @@ run_models <- function(languages) {
          trace = TRUE
       )
       
-      get_results(mean_language , nonlinear_model)
+      get_results(mean_language , nonlinear_model, "Model 4+")
    }
 }
 
-
-# Visualizing datas -------------------------------------------------------
-
-plot(language_values$vertices, language_values$degree_2nd_moment, xlab = "vertices", ylab = "degree_2nd_moment" )
-plot(log(language_values$vertices), log(language_values$degree_2nd_moment),xlab = "log(vertices)", ylab = "log(degree_2nd_moment)" )
-
-plot( mean_language$vertices, mean_language$degree_2nd_moment, xlab = "vertices", ylab = "degree_2nd_moment" )
-
-
-plot(log(mean_language$vertices), log(mean_language$degree_2nd_moment),xlab = "log(vertices)", ylab = "log(degree_2nd_moment)" )
-
-   # plot 
-plot(log(language_values$vertices), log(language_values$degree_2nd_moment),xlab = "vertices", ylab = "log(degree_2nd_moment)")*
-lines( log(language_values$vertices), log( (1-1/language_values$vertices)*( 5 - 6/(language_values$vertices) ) ), col = "green" )
-#lines(log(mean_language$vertices),log(mean_language$degree_2nd_moment), col = "green")
-#lines(log(mean_language$vertices),log((mean_language$vertices+1)/3), col = "red" )
-
-
-#plot(language_values$vertices, language_values$degree_2nd_moment, xlab = "vertices", ylab = "degree 2nd moment")
-
-#lines(mean_language$vertices,mean_language$degree_2nd_moment, col = "green")
-#lines(language_values$vertices,(1 - 1/language_values$vertices)*(5 - 6/language_values$vertices), col = "red")
-#lines(language_values$vertices,4-6/language_values$vertices, col = "blue")
-#lines(language_values$vertices,language_values$vertices-1, col = "blue" )
-
-
-# fitting datas (model 1) -----------------------------------------------------------
-
-lm1 = lm( log(degree_2nd_moment)~log(vertices) , mean_language )
-
-b_initial = coef(lm1)[2]
-nonlinear_model = nls( degree_2nd_moment ~ (0.5)*vertices^b, data=mean_language, start = list( b = b_initial), trace = TRUE )
-
-get_results( mean_language,  nonlinear_model )
-
-
-# fitting datas (model 2) -----------------------------------------------------------
-
-lm2 = lm( log(degree_2nd_moment)~log(vertices) , mean_languages )
-
-
-print(lm2)
-
-a_initial = exp(coef(lm2)[1])
-b_initial = coef(lm2)[2]
-nonlinear_model = nls( degree_2nd_moment~a*vertices^b, data=mean_language, start = list(a = a_initial, b = b_initial), trace = TRUE )
-
-get_results( mean_language,  nonlinear_model )
-
-# fitting datas (model 3) -----------------------------------------------------------
-
-lm3 = lm( log(degree_2nd_moment)~vertices , mean_language )
-
-print(lm3)
-
-a_initial = exp( coef(lm3)[1] )
-c_initial = coef(lm3)[2]
-
-#a_initial = 10
-#b_initial = 10
-
-nonlinear_model = nls( degree_2nd_moment~a*exp(c*vertices), data=mean_language, start = list(a = a_initial, c = c_initial), trace = TRUE )
-
-get_results( mean_language,  nonlinear_model )
-
-
-# fitting datas (model 4) -----------------------------------------------------------
-
-lm4 = lm( degree_2nd_moment~log(vertices) , mean_language )
-
-print(lm4)
-
-a_initial = coef(lm4)[1]
-
-#a_initial = 10
-#b_initial = 10
-
-nonlinear_model = nls( degree_2nd_moment~a*log(vertices), data=mean_language, start = list(a = a_initial), trace = TRUE )
-
-get_results( mean_language , nonlinear_model )
-
-
-
-# fitting datas (model 1+) -----------------------------------------------------------
-
-lm1 = lm( log(degree_2nd_moment)~log(vertices) , mean_language )
-
-b_initial = coef(lm1)[2]
-d_initial = 0
-
-nonlinear_model = nls( degree_2nd_moment ~ (0.5)*vertices^b + d, data=mean_language, start = list( b = b_initial , d = d_initial), trace = TRUE )
-
-get_results( mean_language,  nonlinear_model )
-
-
-# fitting datas (model 2+) -----------------------------------------------------------
-
-lm2 = lm( log(degree_2nd_moment)~log(vertices) , mean_languages )
-
-
-print(lm2)
-
-a_initial = exp(coef(lm2)[1])
-b_initial = coef(lm2)[2]
-d_initial = 0
-
-nonlinear_model = nls( degree_2nd_moment~a*vertices^b + d, data=mean_language, start = list(a = a_initial, b = b_initial, d = d_initial), trace = TRUE )
-
-get_results( mean_language,  nonlinear_model )
-
-# fitting datas (model 3+) -----------------------------------------------------------
-
-lm3 = lm( log(degree_2nd_moment)~vertices , mean_language )
-
-print(lm3)
-
-a_initial = exp( coef(lm3)[1] )
-c_initial = coef(lm3)[2]
-d_initial = 0
-
-#a_initial = 10
-#b_initial = 10
-
-nonlinear_model = nls( degree_2nd_moment~a*exp(c*vertices)+d, data=mean_language, start = list(a = a_initial, c = c_initial, d = d_initial), trace = TRUE )
-
-get_results( mean_language,  nonlinear_model )
-
-
-# fitting datas (model 4+) -----------------------------------------------------------
-
-lm4 = lm( degree_2nd_moment~log(vertices) , mean_language )
-
-print(lm4)
-
-a_initial = coef(lm4)[1]
-d_initial = 0
-
-#a_initial = 10
-#b_initial = 10
-
-nonlinear_model = nls( degree_2nd_moment~a*log(vertices) + d, data=mean_language, start = list(a = a_initial, d = d_initial), trace = TRUE )
-
-get_results( mean_language , nonlinear_model )
-
+# languages = c(
+#    "Arabic",
+#    "Basque",
+#    "Catalan",
+#    "Chinese",
+#    "Czech",
+#    "English",
+#    "Greek",
+#    "Hungarian",
+#    "Italian",
+#    "Turkish"
+# )
+run_models( "Arabic" )
+
+
+# 
+# # Visualizing datas -------------------------------------------------------
+# 
+# plot(language_values$vertices, language_values$degree_2nd_moment, xlab = "vertices", ylab = "degree_2nd_moment" )
+# plot(log(language_values$vertices), log(language_values$degree_2nd_moment),xlab = "log(vertices)", ylab = "log(degree_2nd_moment)" )
+# 
+# plot( mean_language$vertices, mean_language$degree_2nd_moment, xlab = "vertices", ylab = "degree_2nd_moment" )
+# 
+# 
+# plot(log(mean_language$vertices), log(mean_language$degree_2nd_moment),xlab = "log(vertices)", ylab = "log(degree_2nd_moment)" )
+# 
+#    # plot 
+# plot(log(language_values$vertices), log(language_values$degree_2nd_moment),xlab = "vertices", ylab = "log(degree_2nd_moment)")*
+# lines( log(language_values$vertices), log( (1-1/language_values$vertices)*( 5 - 6/(language_values$vertices) ) ), col = "green" )
+# #lines(log(mean_language$vertices),log(mean_language$degree_2nd_moment), col = "green")
+# #lines(log(mean_language$vertices),log((mean_language$vertices+1)/3), col = "red" )
+# 
+# 
+# #plot(language_values$vertices, language_values$degree_2nd_moment, xlab = "vertices", ylab = "degree 2nd moment")
+# 
+# #lines(mean_language$vertices,mean_language$degree_2nd_moment, col = "green")
+# #lines(language_values$vertices,(1 - 1/language_values$vertices)*(5 - 6/language_values$vertices), col = "red")
+# #lines(language_values$vertices,4-6/language_values$vertices, col = "blue")
+# #lines(language_values$vertices,language_values$vertices-1, col = "blue" )
+# 
+# 
+# # fitting datas (model 1) -----------------------------------------------------------
+# 
+# lm1 = lm( log(degree_2nd_moment)~log(vertices) , mean_language )
+# 
+# b_initial = coef(lm1)[2]
+# nonlinear_model = nls( degree_2nd_moment ~ (0.5)*vertices^b, data=mean_language, start = list( b = b_initial), trace = TRUE )
+# 
+# get_results( mean_language,  nonlinear_model )
+# 
+# 
+# # fitting datas (model 2) -----------------------------------------------------------
+# 
+# lm2 = lm( log(degree_2nd_moment)~log(vertices) , mean_languages )
+# 
+# 
+# print(lm2)
+# 
+# a_initial = exp(coef(lm2)[1])
+# b_initial = coef(lm2)[2]
+# nonlinear_model = nls( degree_2nd_moment~a*vertices^b, data=mean_language, start = list(a = a_initial, b = b_initial), trace = TRUE )
+# 
+# get_results( mean_language,  nonlinear_model )
+# 
+# # fitting datas (model 3) -----------------------------------------------------------
+# 
+# lm3 = lm( log(degree_2nd_moment)~vertices , mean_language )
+# 
+# print(lm3)
+# 
+# a_initial = exp( coef(lm3)[1] )
+# c_initial = coef(lm3)[2]
+# 
+# #a_initial = 10
+# #b_initial = 10
+# 
+# nonlinear_model = nls( degree_2nd_moment~a*exp(c*vertices), data=mean_language, start = list(a = a_initial, c = c_initial), trace = TRUE )
+# 
+# get_results( mean_language,  nonlinear_model )
+# 
+# 
+# # fitting datas (model 4) -----------------------------------------------------------
+# 
+# lm4 = lm( degree_2nd_moment~log(vertices) , mean_language )
+# 
+# print(lm4)
+# 
+# a_initial = coef(lm4)[1]
+# 
+# #a_initial = 10
+# #b_initial = 10
+# 
+# nonlinear_model = nls( degree_2nd_moment~a*log(vertices), data=mean_language, start = list(a = a_initial), trace = TRUE )
+# 
+# get_results( mean_language , nonlinear_model )
+# 
+# 
+# 
+# # fitting datas (model 1+) -----------------------------------------------------------
+# 
+# lm1 = lm( log(degree_2nd_moment)~log(vertices) , mean_language )
+# 
+# b_initial = coef(lm1)[2]
+# d_initial = 0
+# 
+# nonlinear_model = nls( degree_2nd_moment ~ (0.5)*vertices^b + d, data=mean_language, start = list( b = b_initial , d = d_initial), trace = TRUE )
+# 
+# get_results( mean_language,  nonlinear_model )
+# 
+# 
+# # fitting datas (model 2+) -----------------------------------------------------------
+# 
+# lm2 = lm( log(degree_2nd_moment)~log(vertices) , mean_languages )
+# 
+# 
+# print(lm2)
+# 
+# a_initial = exp(coef(lm2)[1])
+# b_initial = coef(lm2)[2]
+# d_initial = 0
+# 
+# nonlinear_model = nls( degree_2nd_moment~a*vertices^b + d, data=mean_language, start = list(a = a_initial, b = b_initial, d = d_initial), trace = TRUE )
+# 
+# get_results( mean_language,  nonlinear_model )
+# 
+# # fitting datas (model 3+) -----------------------------------------------------------
+# 
+# lm3 = lm( log(degree_2nd_moment)~vertices , mean_language )
+# 
+# print(lm3)
+# 
+# a_initial = exp( coef(lm3)[1] )
+# c_initial = coef(lm3)[2]
+# d_initial = 0
+# 
+# #a_initial = 10
+# #b_initial = 10
+# 
+# nonlinear_model = nls( degree_2nd_moment~a*exp(c*vertices)+d, data=mean_language, start = list(a = a_initial, c = c_initial, d = d_initial), trace = TRUE )
+# 
+# get_results( mean_language,  nonlinear_model )
+# 
+# 
+# # fitting datas (model 4+) -----------------------------------------------------------
+# 
+# lm4 = lm( degree_2nd_moment~log(vertices) , mean_language )
+# 
+# print(lm4)
+# 
+# a_initial = coef(lm4)[1]
+# d_initial = 0
+# 
+# #a_initial = 10
+# #b_initial = 10
+# 
+# nonlinear_model = nls( degree_2nd_moment~a*log(vertices) + d, data=mean_language, start = list(a = a_initial, d = d_initial), trace = TRUE )
+# 
+# get_results( mean_language , nonlinear_model )
+# 
