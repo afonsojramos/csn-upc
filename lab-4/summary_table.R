@@ -95,5 +95,5 @@ languages = c(
 )
 
 summary = write_summary(languages)
-run_models(languages)
+tables = run_models(languages)
 
