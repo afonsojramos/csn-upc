@@ -89,7 +89,6 @@ run_models <- function(languages) {
    
    for (x in 1:length(languages)) {
       language <- languages[x]
-      language <- "Catalan"
 
       cat(
          "\n-----------------------------\n",
@@ -186,6 +185,15 @@ run_models <- function(languages) {
                                                      (5 - 6 / (
                                                         language_values$vertices
                                                      ))), col = "green")
+      # ---- Model 0 ----
+      cat("\n----- Model 0 -----\n")
+      
+      model0RSS <- sum((language_values$degree_2nd_moment-(language_values$vertices+1)/3)^2)
+      model0n <- length(language_values$vertices)
+      p <- 0
+      model0s <- sqrt(model0RSS/(model0n - p))
+      model0AIC <- model0n*log(2*pi) + model0n*log(model0RSS/model0n) + model0n + 2*(p + 1)
+      
       # ---- Model 1 ----
       cat("\n----- Model 1 -----\n")
       
@@ -357,15 +365,15 @@ run_models <- function(languages) {
       
       
       AIC_table <-
-         rbind(AIC_table, list(language, 0, model1$AIC, model2$AIC, model3$AIC, model4$AIC, model1p$AIC, model2p$AIC, model3p$AIC, model4p$AIC))
+         rbind(AIC_table, list(language, model0AIC, model1$AIC, model2$AIC, model3$AIC, model4$AIC, model1p$AIC, model2p$AIC, model3p$AIC, model4p$AIC))
       
       s_table <-
-         rbind(s_table, list(language, 0, model1$S, model2$S, model3$S, model4$S, model1p$S, model2p$S, model3p$S, model4p$S))
+         rbind(s_table, list(language, model0s, model1$S, model2$S, model3$S, model4$S, model1p$S, model2p$S, model3p$S, model4p$S))
       
-      minAIC <- min(c(model1$AIC, model2$AIC, model3$AIC, model4$AIC, model1p$AIC, model2p$AIC, model3p$AIC, model4p$AIC))
+      minAIC <- min(c(model0AIC, model1$AIC, model2$AIC, model3$AIC, model4$AIC, model1p$AIC, model2p$AIC, model3p$AIC, model4p$AIC))
       
       deltaAIC_table <-
-         rbind(deltaAIC_table, list(language, 0, model1$AIC - minAIC, model2$AIC - minAIC, model3$AIC - minAIC, model4$AIC - minAIC, model1p$AIC - minAIC, model2p$AIC - minAIC, model3p$AIC - minAIC, model4p$AIC - minAIC))
+         rbind(deltaAIC_table, list(language, model0AIC - minAIC, model1$AIC - minAIC, model2$AIC - minAIC, model3$AIC - minAIC, model4$AIC - minAIC, model1p$AIC - minAIC, model2p$AIC - minAIC, model3p$AIC - minAIC, model4p$AIC - minAIC))
    }
    
    return(list("AIC" = AIC_table, "S" = s_table, "deltaAIC" = deltaAIC_table))
