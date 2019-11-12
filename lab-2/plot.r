@@ -1,6 +1,3 @@
-library(ggplot2)
-require("VGAM") # for the Riemann-zeta function
-
 H <- function(n, a) {
   sum((1:n) ^ (-a))
 }

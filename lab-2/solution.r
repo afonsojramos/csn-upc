@@ -1,15 +1,6 @@
-require("stats4") # for MLE
-require("VGAM") # for the Riemann-zeta function
-
 H <- function(n, a) {
   sum((1:n) ^ (-a))
 }
-
-source = read.table("list-out.txt",
-                    # this is to indicate the first line of the file contains the names of the columns instead of the real data
-                    header = TRUE,
-                    # this is need to have the cells treated as real strings and not as categorial data.
-                    as.is = c("language", "file"))
 
 get_AIC <- function(m2logL, K, N) {
   m2logL + 2 * K * N / (N - K - 1) # AIC with a correction for sample size
@@ -149,10 +140,4 @@ estimate_likelihoods <- function(file) {
   print(aic_best)
   aic_diffs <- abs(aics - aic_best)
   print(aic_diffs)
-}
-
-for (x in 1:nrow(source)) {
-  print("-----------------------")
-  print(source$language[x])
-  estimate_likelihoods(source$file[x])
 }

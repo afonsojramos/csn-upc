@@ -1,9 +1,3 @@
-setwd("D:/Clouds/GitHub/csn-upc/lab-2/out-degree_sequences")
-library(dplyr)
-library(tidyr)
-library(formattable)
-library(purrr)
-
 write_summary <- function(language, file) {
     degree_sequence = read.table(file, header = FALSE)
     
@@ -23,16 +17,3 @@ write_summary <- function(language, file) {
 source = read.table("./list.txt",
                     header = TRUE,
                     as.is = c("language", "file"))
-
-source %>%
-    as.data.frame %>%
-    setNames(c('language', 'file')) %>%
-    mutate_if(is.factor, as.character) %>%
-    mutate(summary = pmap(list(language, file), write_summary)) %>%
-    unnest_wider(summary) %>%
-    # removes extra columns from table
-    select(-c('language', 'file')) %>%
-    formattable(align = c("l", "c", "c", "c", "c", "c", "c", "c", "r"),
-                list(`Language` = formatter(
-                    "span", style = ~ style(color = "black", font.weight = "bold")
-                )))
