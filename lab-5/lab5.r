@@ -21,63 +21,93 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 ##exploring community structure
 karate <- graph.famous("Zachary")
+g <- graph.famous("Zachary")
 ##view friendship relation among members of Karate club
 plot(karate) 
 ##Find cluster partition according to Walktrap algorithm:
 #distance is based on random walks, and similarity==shortest random walk
-wc <- walktrap.community(karate)
-modularity(wc)
-membership(wc)
+communities <- walktrap.community(karate)
 plot(wc, karate)
 
-##An alternative way of plotting communities without the shaded regions:
-plot(karate, vertex.color=membership(wc))
+## HELPERS
 
-##to view hierarchical structure (dendogram) given by algorithm that works by hierarchical construction (as fastgreedy) 
-karate <- graph.famous("Zachary")
-##fastgreedy.community : clustering via greedy optimization of modularity
-fc <- fastgreedy.community(karate)
-dendPlot(fc)
+same.community <- function(memb, a, b) {
+  return(memb[a] == memb[b])
+}
 
-##compare with Girvan-Newman edge betweeness:
-GN<-edge.betweenness.community(karate)
-dendPlot(GN)
+increase_cluster <- function(com_edges, memb, v) {
+  v_com <- memb[v]
+  com_edges[v_com] = com_edges[v_com] + 1
+  return(com_edges)
+}
 
-modularity(GN); modularity(fc)
+# METRICS
 
-##HIERARCHICAL CLUST on dissimilarity graph
-IBEX<-read.table("./data/Ibex0809",sep="",header=T)
-dd <-as.dist(2*(1-cor(IBEX)))
-met="ward.D2" ##  complete,single,average,median,mcquitty
-hc <-hclust(dd,method=met)
-plot(hc,main=paste(met," method"),axes=TRUE,xlab="",sub="")
-#compute the cut at mean level K
-l <-length(hc$height);hh <- sort(hc$height);K <- mean(hh[1:l])
-abline(h=K,lty=2,lwd=2) ##draw the cut
-#branches below K make clusters, above go to singletons
-groups <- cutree(hc, h = K)  ##obtain  clusters
-numgp <- max(groups) #number of clusters. 
-#extract the names of each group and convert to list
-W <- list(names(groups[groups==1]))
-##recursively concatenate lists
-for (i in 2:numgp){W <- c(W,list(names(groups[groups==i])))}
-W
-##Xtras
-plot(hc,hang=-1) ##hang=-1 places labels at bottom
+get_expansion <- function(g_vn, outer_com_edges) {
+  return(sum(outer_com_edges)/g_vn)
+}
 
-##Obtain adjacency matrix from dissimilarity relation (dist)
-A<-as.matrix(dd)
-##create igraph graph object from adjacency matrix
-G <-graph.adjacency(A,mode="undirected",weighted = TRUE)
-plot(G)
+get_conductance <- function(g_vn, c_vns, outer_com_edges, inner_com_edges) {
+  n <- length(communities[])
+  
+  value <- 0
+  for(i in 1:n) {
+    value = value + outer_com_edges[i]*c_vns[i]/(inner_com_edges[i] + outer_com_edges[i])
+  }
 
-##BE AWARE when applying clustering algorithms from igraph to graph object G
-##which are based on maximizing modularity (wrto random graph). Problem: G is complete
-##keep in mind is a weighted graph so it must be indicated
-fG<-fastgreedy.community(G,weights = E(G)$weight)
-dendPlot(fG)
-sizes(fG) ##give community sizes (by max modularity, will see is too rough: gives 1 community)
-modularity(fG)
-##almost 0 :  the problem is the graph is complete so modularity is almost 0 for any partition
-##fix: consider Hamiltonian with parameter gamma > 1.
+  return(value/g_vn)
+}
+
+get_tpt <- function(g_vn, c_vns, g, communities) {
+  n <- length(communities[])
+  
+  value <- 0
+  for(i in 1:n) {
+    value = value + sum(count_triangles(induced.subgraph(g, unname(unlist(communities[i])))))
+  }
+  
+  return(value/g_vn)
+}
+
+get_metrics <- function(g, communities) {
+  n <- length(communities[])
+  
+  g_vn <- gsize(g)
+  memb <- membership(communities)
+  edges <- E(g)
+  c_vns <- unname(sizes(communities))
+    
+  outer_com_edges <- rep(0, n)
+  inner_com_edges <- rep(0, n)
+  
+  for(i in 1:length(edges)) {
+    e <- ends(g, edges[i])
+    a <- e[1]
+    b <- e[2]
+    
+    if(same.community(memb, a, b)) {
+      # same community.. adding 2 times to the same 
+      inner_com_edges <- increase_cluster(inner_com_edges, memb, a)
+      inner_com_edges <- increase_cluster(inner_com_edges, memb, b)
+    }
+    else {
+      outer_com_edges <- increase_cluster(outer_com_edges, memb, a)
+      outer_com_edges <- increase_cluster(outer_com_edges, memb, b)
+    }
+  }
+  
+  expansion <- get_expansion(g_vn, outer_com_edges)
+  conductance <- get_conductance(g_vn, c_vns, outer_com_edges, inner_com_edges)
+  tpt <- get_tpt(g_vn, c_vns, g, communities)
+  
+  return(list("modularity" = modularity(communities), "expansion" = expansion,  "conductance" = conductance, "TPT" = tpt))
+}
+
+# MAIN
+
+metrics <- get_metrics(g, communities)
+
+print(metrics)
+
+
 
