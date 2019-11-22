@@ -5,7 +5,8 @@ requiredPackages <-
     "data.table",
     "knitr",
     "rstudioapi",
-    "xtable")
+    "xtable",
+    "DT")
 
 for (pac in requiredPackages) {
   if (!require(pac,  character.only = TRUE)) {
@@ -13,21 +14,53 @@ for (pac in requiredPackages) {
     library(pac,  character.only = TRUE)
   }
 }
+
+# You need to install this library manually
+library(Rglpk) # https://stackoverflow.com/questions/25114771/glpk-no-such-file-or-directory-error-when-trying-to-install-r-package
+
 rm(pac)
 rm(requiredPackages)
 
 # set pwd to current directory, must load rstudioapi before.
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+if(rstudioapi::isAvailable()) {
+  setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+}
 
-##exploring community structure
-karate <- graph.famous("Zachary")
-g <- graph.famous("Zachary")
-##view friendship relation among members of Karate club
-plot(karate) 
-##Find cluster partition according to Walktrap algorithm:
-#distance is based on random walks, and similarity==shortest random walk
-communities <- walktrap.community(karate)
-plot(wc, karate)
+## PRINTING
+
+print_graph_results <- function(result) {
+  algorithm_names <- names(result)
+  measure_names <- names(result[[algorithm_names[[1]]]])
+  
+  cat(measure_names, "\n")
+  
+  for(i in 1:length(algorithm_names)) {
+    algorithm_name <- algorithm_names[[i]]
+    cat(algorithm_name, ":")
+    
+    for(j in 1:length(measure_names)) {
+      measure_name <- measure_names[[j]]
+      
+      cat(" ", result[[algorithm_name]][[measure_name]], sep="")
+    }
+    cat("\n")
+  }
+}
+
+result_to_dd <- function(result) {
+  algorithm_names <- names(result)
+  measure_names <- names(result[[algorithm_names[[1]]]])
+  
+  dd<-  as.data.frame(matrix(unlist(result), nrow=length(unlist(result[1]))))
+  dd <- transpose(dd)
+  
+  colnames(dd) <- measure_names
+  rownames(dd) <- algorithm_names
+  
+  dd <- format(round(dd, 3), nsmall = 3)
+  
+  return(dd)
+}
 
 ## HELPERS
 
@@ -48,7 +81,7 @@ get_expansion <- function(g_vn, outer_com_edges) {
 }
 
 get_conductance <- function(g_vn, c_vns, outer_com_edges, inner_com_edges) {
-  n <- length(communities[])
+  n <- length(c_vns)
   
   value <- 0
   for(i in 1:n) {
@@ -58,24 +91,24 @@ get_conductance <- function(g_vn, c_vns, outer_com_edges, inner_com_edges) {
   return(value/g_vn)
 }
 
-get_tpt <- function(g_vn, c_vns, g, communities) {
-  n <- length(communities[])
+get_tpt <- function(g_vn, c_vns, g, comm) {
+  n <- length(comm[])
   
   value <- 0
   for(i in 1:n) {
-    value = value + sum(count_triangles(induced.subgraph(g, unname(unlist(communities[i])))))
+    value = value + sum(count_triangles(induced.subgraph(g, unname(unlist(comm[i])))))
   }
   
   return(value/g_vn)
 }
 
-get_metrics <- function(g, communities) {
-  n <- length(communities[])
+get_metrics <- function(g, comm) {
+  n <- length(comm[])
   
   g_vn <- gsize(g)
-  memb <- membership(communities)
+  memb <- membership(comm)
   edges <- E(g)
-  c_vns <- unname(sizes(communities))
+  c_vns <- unname(sizes(comm))
     
   outer_com_edges <- rep(0, n)
   inner_com_edges <- rep(0, n)
@@ -86,7 +119,7 @@ get_metrics <- function(g, communities) {
     b <- e[2]
     
     if(same.community(memb, a, b)) {
-      # same community.. adding 2 times to the same 
+      # !!same community!! adding 2 times to the same community
       inner_com_edges <- increase_cluster(inner_com_edges, memb, a)
       inner_com_edges <- increase_cluster(inner_com_edges, memb, b)
     }
@@ -98,16 +131,53 @@ get_metrics <- function(g, communities) {
   
   expansion <- get_expansion(g_vn, outer_com_edges)
   conductance <- get_conductance(g_vn, c_vns, outer_com_edges, inner_com_edges)
-  tpt <- get_tpt(g_vn, c_vns, g, communities)
+  tpt <- get_tpt(g_vn, c_vns, g, comm)
   
-  return(list("modularity" = modularity(communities), "expansion" = expansion,  "conductance" = conductance, "TPT" = tpt))
+  return(list("modularity" = modularity(comm), "expansion" = expansion,  "conductance" = conductance, "TPT" = tpt))
 }
+
+get_graph_metrics <- function(algorithm_name, g) {
+  comm <- get(algorithm_name)(g)
+  metrics <- get_metrics(g, comm)
+  return(metrics)
+}
+
+
+# INPUT, add any graph or any community algorithm
+karate <- graph.famous("Zachary")
+meredith <- graph.famous("Meredith")
+
+gs <- list(karate, meredith)
+graph_names <- c("Zachary", "Meredith")
+
+algorithms <- c("edge.betweenness.community", "fastgreedy.community", "label.propagation.community", 
+                "leading.eigenvector.community", "multilevel.community", "optimal.community",
+                "spinglass.community", "walktrap.community", "infomap.community")
 
 # MAIN
 
-metrics <- get_metrics(g, communities)
+result <- list()
 
-print(metrics)
-
-
+for(i in 1:length(gs)) {
+  cat("Graph:", graph_names[i], "\n")
+  
+  g <- gs[[i]]
+  
+  for(j in 1:length(algorithms)) {
+    algorithm_name <- algorithms[[j]]
+    metrics <- get_graph_metrics(algorithm_name, g)
+    result[algorithm_name] <- list(metrics)
+  }
+  
+  # print_graph_results(result)
+  
+  dd_result <- result_to_dd(result)
+  
+  print(dd_result)
+  
+  if(rstudioapi::isAvailable()) {
+    datatable(dd_result)
+  } 
+  cat("\n -------------------- \n\n")
+}
 

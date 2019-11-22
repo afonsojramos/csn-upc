@@ -20,7 +20,7 @@ rm(requiredPackages)
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 ##exploring community structure
-karate <- graph.famous("Zachary")
+karate <- graph.famous("Meredith")
 ##view friendship relation among members of Karate club
 plot(karate) 
 ##Find cluster partition according to Walktrap algorithm:
@@ -34,7 +34,7 @@ plot(wc, karate)
 plot(karate, vertex.color=membership(wc))
 
 ##to view hierarchical structure (dendogram) given by algorithm that works by hierarchical construction (as fastgreedy) 
-karate <- graph.famous("Zachary")
+karate <- graph.famous("Meredith")
 ##fastgreedy.community : clustering via greedy optimization of modularity
 fc <- fastgreedy.community(karate)
 dendPlot(fc)
