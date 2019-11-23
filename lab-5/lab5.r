@@ -62,6 +62,17 @@ result_to_dd <- function(result) {
   return(dd)
 }
 
+save_plot <- function(graph_name, algorithm, g, comm) {
+  directory <- paste("plots/", graph_name, sep="")
+  if(!dir.exists(directory)) {
+    dir.create(directory)
+  }
+  
+  png(filename=paste(directory, "/", algorithm, ".png", sep = ""))
+  plot(comm, g)
+  dev.off()
+}
+
 #### HELPERS ####
 
 same.community <- function(memb, a, b) {
@@ -72,6 +83,46 @@ increase_cluster <- function(com_edges, memb, v) {
   v_com <- memb[v]
   com_edges[v_com] = com_edges[v_com] + 1
   return(com_edges)
+}
+
+generate_full_minus <- function(size, minus) {
+  g <- graph.full(size)
+  g <- delete_edges(g, sample(E(g), round((1 - minus)*length(E(g)))))
+  return(g)
+}
+
+add_edge_if_needed <- function(g, a, b, size) {
+  
+  v_a <- sample((size*(a - 1)+1):(size*a), 1)
+  v_b <- sample((size*(b - 1)+1):(size*b), 1)
+  
+  if(distances(g, a, b)!= Inf){
+    g <- g + edges(c(v_a, v_b))
+  }
+  
+  return(g)
+}
+
+generate_comm_graph <- function(a, b, size) {
+  g <- generate_full_minus(10, 0.9) + generate_full_minus(10, 0.8) + generate_full_minus(10, 0.7) + generate_full_minus(10, 0.6) + 
+    generate_full_minus(10, 0.4) + generate_full_minus(10, 0.3) + generate_full_minus(10, 0.2) + graph.ring(10)
+  
+  # add 1/3 extra edges
+  g <- g + edges(sample(V(g), round(length(E(g))*0.33)*2, replace=TRUE))
+  
+  # make "almost" sure it's connected
+  g <- add_edge_if_needed(g, 1, 7, size = 10)
+  g <- add_edge_if_needed(g, 2, 7, size = 10)
+  g <- add_edge_if_needed(g, 3, 7, size = 10)
+  g <- add_edge_if_needed(g, 4, 6, size = 10)
+  g <- add_edge_if_needed(g, 5, 6, size = 10)
+  g <- add_edge_if_needed(g, 3, 5, size = 10)
+  g <- add_edge_if_needed(g, 4, 8, size = 10)
+
+  
+  g <- simplify(g)
+  
+  return(g)
 }
 
 #### METRICS ####
@@ -96,7 +147,7 @@ get_tpt <- function(g_vn, c_vns, g, comm) {
   
   value <- 0
   for(i in 1:n) {
-    value = value + sum(count_triangles(induced.subgraph(g, unname(unlist(comm[i])))))
+    value = value + sum(count_triangles(induced.subgraph(g, unname(unlist(comm[i])))))*c_vns[i]
   }
   
   return(value/g_vn)
@@ -139,7 +190,7 @@ get_metrics <- function(g, comm) {
 get_graph_metrics <- function(algorithm_name, g) {
   comm <- get(algorithm_name)(g)
   metrics <- get_metrics(g, comm)
-  return(metrics)
+  return(list("comm" = comm, "metrics" = metrics))
 }
 
 
@@ -147,13 +198,17 @@ get_graph_metrics <- function(algorithm_name, g) {
 # Add any graph or any community algorithm
 karate <- graph.famous("Zachary")
 meredith <- graph.famous("Meredith")
+generated <- generate_comm_graph()
+citation_g <- simplify(read_graph("data/cit-DBLP.edges", format = "edgelist", directed = FALSE))
 
-gs <- list(karate, meredith)
-graph_names <- c("Zachary", "Meredith")
+
+gs <- list(karate)
+graph_names <- c("zachary", "meredith", "generated", "citations")
 
 algorithms <- c("edge.betweenness.community", "fastgreedy.community", "label.propagation.community", 
                 "leading.eigenvector.community", "multilevel.community", "optimal.community",
                 "spinglass.community", "walktrap.community", "infomap.community")
+
 
 #### MAIN ####
 
@@ -166,8 +221,15 @@ for(i in 1:length(gs)) {
   
   for(j in 1:length(algorithms)) {
     algorithm_name <- algorithms[[j]]
-    metrics <- get_graph_metrics(algorithm_name, g)
-    result[algorithm_name] <- list(metrics)
+    response <- get_graph_metrics(algorithm_name, g)
+    
+    if(length(V(g) < 100)) {
+      save_plot(graph_names[i], algorithm_name, g, response$comm)
+    }
+    
+    result[algorithm_name] <- list(response$metrics)
+    
+    cat("Processing:", algorithm_name, "\n")
   }
   
   # print_graph_results(result)

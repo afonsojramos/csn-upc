@@ -25,7 +25,7 @@ karate <- graph.famous("Meredith")
 plot(karate) 
 ##Find cluster partition according to Walktrap algorithm:
 #distance is based on random walks, and similarity==shortest random walk
-wc <- walktrap.community(karate)
+wc <- edge.betweenness.community(karate)
 modularity(wc)
 membership(wc)
 plot(wc, karate)
@@ -36,7 +36,7 @@ plot(karate, vertex.color=membership(wc))
 ##to view hierarchical structure (dendogram) given by algorithm that works by hierarchical construction (as fastgreedy) 
 karate <- graph.famous("Meredith")
 ##fastgreedy.community : clustering via greedy optimization of modularity
-fc <- fastgreedy.community(karate)
+fc <- edge.betweenness.community(karate)
 dendPlot(fc)
 
 ##compare with Girvan-Newman edge betweeness:
