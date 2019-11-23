@@ -1,4 +1,4 @@
-# Load and install necessary packages
+#### Install ####
 requiredPackages <-
   c("igraph",
     "ggplot2",
@@ -26,7 +26,7 @@ if(rstudioapi::isAvailable()) {
   setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 }
 
-## PRINTING
+#### PRINTING ####
 
 print_graph_results <- function(result) {
   algorithm_names <- names(result)
@@ -62,7 +62,7 @@ result_to_dd <- function(result) {
   return(dd)
 }
 
-## HELPERS
+#### HELPERS ####
 
 same.community <- function(memb, a, b) {
   return(memb[a] == memb[b])
@@ -74,7 +74,7 @@ increase_cluster <- function(com_edges, memb, v) {
   return(com_edges)
 }
 
-# METRICS
+#### METRICS ####
 
 get_expansion <- function(g_vn, outer_com_edges) {
   return(sum(outer_com_edges)/g_vn)
@@ -143,7 +143,8 @@ get_graph_metrics <- function(algorithm_name, g) {
 }
 
 
-# INPUT, add any graph or any community algorithm
+#### INPUT ####
+# Add any graph or any community algorithm
 karate <- graph.famous("Zachary")
 meredith <- graph.famous("Meredith")
 
@@ -154,7 +155,7 @@ algorithms <- c("edge.betweenness.community", "fastgreedy.community", "label.pro
                 "leading.eigenvector.community", "multilevel.community", "optimal.community",
                 "spinglass.community", "walktrap.community", "infomap.community")
 
-# MAIN
+#### MAIN ####
 
 result <- list()
 
