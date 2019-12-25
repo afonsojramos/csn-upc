@@ -11,3 +11,4 @@ This was my first contact with the programming language R, and, as such, there i
 * lab 4 - [@fuxeen](https://github.com/fuxeen)
 * lab 5 - [@martindansc](https://github.com/martindansc)
 * lab 6 - [@amaliavr](https://github.com/amaliavr)
+* lab 7 - [@luisnmartins](https://github.com/luisnmartins)
