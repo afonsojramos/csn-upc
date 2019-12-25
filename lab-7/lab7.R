@@ -35,6 +35,29 @@ computeSummaryTable <- function(graphs){
   return(table)
 }
 
+computeLambdaTable <- function(graphs){
+  
+  graphsNames = c("Erdos-Renyi", "Full graph", "Barabasi-Albert",  "Watts-Strogatz")
+  table <- data.table("Graph" = character(),
+                      "lambda" = numeric(),
+                      "gamma" = numeric(),
+                      "beta" = numeric(),
+                      stringsAsFactors = FALSE)
+  
+  for (x in 1:length(graphsNames)){
+    
+    g = graphs[[x]]
+    gName = graphsNames[x]
+    print(gName)
+    lambda = spectrum(g, which=list(pos="LM", howmany=1))$values
+    gamma = 0.7
+    beta = gamma/lambda
+    
+    table <- rbind(table, list(gName, lambda, beta, gamma))
+  }
+  return(table)
+}
+
 
 
 nodes = 1000
@@ -46,3 +69,4 @@ ws.graph <- watts.strogatz.game(1,nodes,4,0.5)
 
 graphs = list(er.graph, full.graph, ba.graph, ws.graph)
 computeSummaryTable(graphs)
+computeLambdaTable(graphs)
