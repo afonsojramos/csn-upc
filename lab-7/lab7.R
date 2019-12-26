@@ -7,9 +7,9 @@ for (pac in requiredPackages) {
   } 
 }
 
-computeSummaryTable <- function(graphs){
+graphsTable <- function(graphs){
   
-  graphsNames = c("Erdos-Renyi", "Full graph", "Barabasi-Albert", "Watts-Strogatz")
+  graphsNames = c("Erdos-Renyi", "Complete Graph", "Barabasi-Albert", "Watts-Strogatz")
   table <- data.table("Graph" = character(),
                       "N" = numeric(),
                       "E" = numeric(),
@@ -35,9 +35,9 @@ computeSummaryTable <- function(graphs){
   return(table)
 }
 
-computeLambdaTable <- function(graphs){
+thresholdTable <- function(graphs){
   
-  graphsNames = c("Erdos-Renyi", "Full graph", "Barabasi-Albert",  "Watts-Strogatz")
+  graphsNames = c("Erdos-Renyi", "Complete Graph", "Barabasi-Albert",  "Watts-Strogatz")
   table <- data.table("Graph" = character(),
                       "lambda" = numeric(),
                       "gamma" = numeric(),
@@ -50,7 +50,7 @@ computeLambdaTable <- function(graphs){
     gName = graphsNames[x]
     print(gName)
     lambda = spectrum(g, which=list(pos="LM", howmany=1))$values
-    gamma = 0.7
+    gamma = 0.5
     beta = gamma/lambda
     
     table <- rbind(table, list(gName, lambda, beta, gamma))
@@ -59,14 +59,14 @@ computeLambdaTable <- function(graphs){
 }
 
 
-
 nodes = 1000
 
 er.graph <- erdos.renyi.game(nodes, 0.5)
-full.graph <- make_full_graph(nodes, directed=F)
+complete.graph <- make_full_graph(nodes, directed=F)
 ba.graph <-barabasi.game(nodes, 1, directed=F)
 ws.graph <- watts.strogatz.game(1,nodes,4,0.5)
 
-graphs = list(er.graph, full.graph, ba.graph, ws.graph)
-computeSummaryTable(graphs)
-computeLambdaTable(graphs)
+graphs = list(er.graph, complete.graph, ba.graph, ws.graph)
+graphsTable(graphs)
+thresholdTable(graphs)
+
